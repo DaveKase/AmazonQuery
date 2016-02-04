@@ -1,0 +1,7 @@
+{
+	"accessKey":"Your_Access_Key_ID",
+	"secretKey":"Your_Secret_Access_Key",
+	"destination":"Your_Destination",
+	"associateTag":"Your_Associate_Tag",
+	"currId":"Your_Currency_App_Id"
+}

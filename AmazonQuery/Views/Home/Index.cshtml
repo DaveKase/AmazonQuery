@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Amazon Query</title>
+        <link rel="stylesheet" href="~/css/site.css" />
+        <script src="~/scripts/jquery-2.1.4.min.js"></script>
+    </head>
+
+    <body>
+        <div class="searchForm">
+            <form>
+                <p>
+                    <input type="text" name="SearchString" id="searchString">
+                    <input type="button" value="Search" onclick="getAjaxData()" />
+                    Currency:
+                    <select id='dropdown' onchange='currencyChanged()'>
+                        <option value='GBP'>British Pound</option>
+                        <option value='EUR'>Euro</option>
+                        <option value='USD'>US Dollar</option>
+                    </select>
+                </p>
+            </form>
+        </div>
+
+        <div class="loader">
+            <img src="~/images/load.gif" />
+        </div>
+
+        <div class="list">
+        </div>
+
+        <div class="more" id="moreForm">
+            <input type='button' value='Load More' onclick='loadMore()' />
+        </div>
+
+        <script>
+            var oldText = "";
+            var oldCurr = "GBP";
+            var json;
+            var jsonString;
+            var nr = 0;
+
+            $(document).ready(function () {
+                $("#moreForm").hide();
+                $(".loader").hide();
+            });
+
+            $(document).keypress(function (e) {
+                if (e.which == 13) {
+                    getAjaxData();
+                }
+            });
+
+            function getAjaxData() {
+                var text = $("#searchString").val();
+
+                if (text == "") {
+                    return;
+                } else if (oldText === "") {
+                    oldText = text;
+                } else if (oldText != text) {
+                    $(".list").empty();
+                    oldText = text;
+                    $("#moreForm").hide();
+                } else {
+                    return
+                }
+
+                $(".loader").show();
+                var dropdown = document.getElementById("dropdown");
+                dropdown.value = "GBP";
+
+                $.getJSON('/Home/GetData?SearchString=' + text, function (data) {
+                    json = data;
+                    $(".loader").hide();
+
+                    $.each(data, function (index, value) {
+                        var title = value.title;
+                        var price = value.price;
+
+                        if (index < 13) {
+                            nr = index + 1;
+                            $(".list").append("<li>" + (nr) + ". " + title + ", " + price + "</li>");
+                        }
+                    });
+                
+                    jsonString = JSON.stringify(data);
+                    $("#moreForm").show();
+                });
+            }
+
+            function loadMore() {
+                var text = $("#searchString").val();
+                var dropdown = document.getElementById("dropdown");
+                dropdown.value = 0;
+
+                $.each(json, function (index, value)
+                {
+                    if (index < 13) {
+                        var title = value.title;
+                        var price = value.price;
+                        nr++;
+                        $(".list").append("<li>" + (nr) + ". " + title + ", " + price + "</li>");
+                    }
+                });
+
+                $.getJSON('/Home/GetData?SearchString=' + text, function (data) {
+                    $.each(data, function (index, value) {
+                        json.append(value);
+                    });
+
+                    jsonString += JSON.stringify(data);
+                });
+
+                console.log("Loading more");
+            }
+
+            function currencyChanged() {
+                var text = $("#searchString").val();
+                var newCurr = document.getElementById("dropdown").value;
+                var currId = "";
+
+                $.get('/Home/ChangeCurrency', function (data) {
+                    currId = data;
+                    console.log("currId = " + currId);
+
+                    $.get("https://openexchangerates.org/api/latest.json", { app_id: currId }, function (data) {
+                        var gbpRate = data.rates.GBP;
+                        var eurRate = data.rates.EUR;
+                                                
+                        console.log("old curr = " + oldCurr + ", newCurr = " + newCurr);
+                        $(".list").empty();
+
+                        $.each(json, function (index, value) {
+                            if (index < nr) {
+                                var title = value.title;
+                                var price = value.price;
+
+                                switch (newCurr) {
+                                    case "EUR":
+                                        break;
+                                    case "USD":
+                                        var newPrice = price * gbpRate;
+                                        $(".list").append("<li>" + (index + 1) + ". "
+                                            + title + ", " + newPrice + "</li>");
+                                        break;
+                                    case "GBP":
+                                        break;
+                                }
+                            }
+                        });
+
+
+
+                        oldCurr = newCurr;
+                    });
+
+                    /*$.each(data, function (index, value) {
+                        console.log(value);
+                        currId = value;
+                        console.log("currid in each = " + currId)
+                    });
+                    /*$(".list").empty();
+
+                    $.each(data, function (index, value) {
+                        var title = value.title;
+                        var price = value.price;
+                        $(".list").append("<li>" + (index + 1) + ". " + title + ", " + price + "</li>");
+                    });*/
+                });
+                
+
+            }
+        </script>
+    </body>
+</html>
