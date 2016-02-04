@@ -16,9 +16,9 @@
                     <input type="button" value="Search" onclick="getAjaxData()" />
                     Currency:
                     <select id='dropdown' onchange='currencyChanged()'>
+                        <option value='USD'>US Dollar</option>
                         <option value='GBP'>British Pound</option>
                         <option value='EUR'>Euro</option>
-                        <option value='USD'>US Dollar</option>
                     </select>
                 </p>
             </form>
@@ -37,7 +37,7 @@
 
         <script>
             var oldText = "";
-            var oldCurr = "GBP";
+            var oldCurr = "USD";
             var json;
             var jsonString;
             var nr = 0;
@@ -70,7 +70,7 @@
 
                 $(".loader").show();
                 var dropdown = document.getElementById("dropdown");
-                dropdown.value = "GBP";
+                dropdown.value = "USD";
 
                 $.getJSON('/Home/GetData?SearchString=' + text, function (data) {
                     json = data;
@@ -123,10 +123,10 @@
                 var currId = "";
 
                 $.get('/Home/ChangeCurrency', function (data) {
+                    /*$.get("https://openexchangerates.org/api/latest.json", { app_id: currId }, function (data) {
                     currId = data;
                     console.log("currId = " + currId);
 
-                    $.get("https://openexchangerates.org/api/latest.json", { app_id: currId }, function (data) {
                         var gbpRate = data.rates.GBP;
                         var eurRate = data.rates.EUR;
                                                 
@@ -157,7 +157,7 @@
                         oldCurr = newCurr;
                     });
 
-                    /*$.each(data, function (index, value) {
+                    $.each(data, function (index, value) {
                         console.log(value);
                         currId = value;
                         console.log("currid in each = " + currId)

@@ -69,7 +69,7 @@ namespace AmazonQuery.Controllers
                     string price = priceNode.InnerXml;
                     price = price.Replace("£", "");
 
-                    double parsedPrice = Double.Parse(price);
+                    double parsedPrice = Double.Parse(price, System.Globalization.NumberStyles.Currency);
                     double rate = GetGbpRate(currId);
                     double newPrice = parsedPrice * rate;
 
@@ -239,7 +239,8 @@ namespace AmazonQuery.Controllers
             JObject jObject = JObject.Parse(response);
 
             JObject ratesObj = (JObject) jObject.GetValue("rates");
-            double rate = Double.Parse(ratesObj.GetValue("GBP").ToString());
+            double rate = Double.Parse(ratesObj.GetValue("GBP").ToString(),
+                System.Globalization.NumberStyles.Currency);
 
             return rate;
         }

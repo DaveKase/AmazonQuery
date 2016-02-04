@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Net;
 using System.Web.Mvc;
 
 namespace AmazonQuery.Controllers
@@ -72,11 +73,18 @@ namespace AmazonQuery.Controllers
             return jObject;
         }
 
-        public string ChangeCurrency()
+        public string ChangeCurrency(string resultString, string oldCurrency, string newCurrency)
         {
             JObject keysJObject = GetKeys();
             string currAppId = keysJObject.GetValue("currId").ToString();
-            
+            string url = "https://openexchangerates.org/api/latest.json?app_id=" + currAppId;
+            WebClient client = new WebClient();
+            string response = client.DownloadString(url);
+            JObject jObject = JObject.Parse(response);
+
+            JObject ratesObj = (JObject)jObject.GetValue("rates");
+            double rate = 0.0;
+
             return currAppId;
         }
     }
